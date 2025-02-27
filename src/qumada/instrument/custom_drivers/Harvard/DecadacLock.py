@@ -27,9 +27,13 @@ class DacChannelLock(DacChannel):
     """
     Modified DacChannel class to supprt locking.
     """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, parent, name, channel, min_val=-5, max_val=5):
+        super().__init__(parent, name, channel, min_val, max_val)
         del self.functions["script_ramp"]
+
+        self.add_function(
+            "script_ramp", call_cmd=self.script_ramp, args=(self._volt_val, self._volt_val, self._dur_val)
+        )
     
         # The script_ramp function added by __init__ needs to replaced to use new worker method.
         # It is simply deleted and directly defined anew. (QCoDeS Docu recommends not using functions)
