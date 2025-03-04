@@ -49,7 +49,7 @@ from qumada.instrument.buffers.buffer import (
 
 from qumada.instrument.mapping import (
     #DUMMY_DMM_MAPPING,
-    #add_mapping_to_instrument,
+    add_mapping_to_instrument,
     map_terminals_gui,
 )
 
@@ -57,11 +57,19 @@ from qumada.instrument.mapping import (
 from qumada.instrument.custom_drivers.Harvard.DecadacLock import DecadacLock
 from qumada.instrument.custom_drivers.Harvard.Decadac import Decadac
 
+from qumada.instrument.mapping.Harvard.Decadac import DecadacMapping
+from qumada.instrument.mapping.base import map_gates_to_instruments
+
 import threading
 from pathlib import Path
 import numpy as np
 
 import pyvisa
+
+#from qtools_metadata.metadata import create_metadata, save_metadata_object_to_db
+
+#db.api_url = "http://134.61.7.48:9124"
+#metadata = create_metadata()
 
 # List visa resources
 rm=pyvisa.ResourceManager()
@@ -71,7 +79,9 @@ print(rm.list_resources())
 trigger = threading.Event()
 
 station = Station()
-dac = DecadacLock(name = "decadac", address = "COM5", min_val = -10, max_val = 10)
+dac = DecadacLock(name = "decadac", address = "COM5", min_val = -10, max_val = 10, terminator="\n")
+#add_mapping_to_instrument(dac, mapping = DecadacMapping())
+
 station.add_component(dac)
 
 initialise_or_create_database_at(Path.home() / "test_db_DecaDAC.db")
@@ -82,8 +92,8 @@ parameters = {
         #"voltage": {"type": "gettable"},
         #"current": {"type": "gettable"},
     },
-    "gate1": {"voltage": {"type": "dynamic", "setpoints": np.linspace(0, np.pi, 100), "value": 1}},
-    "gate2": {"voltage": {"type": "dynamic", "setpoints": np.linspace(0, np.pi, 100), "value": 1}},
+    "gate1": {"voltage": {"type": "dynamic", "setpoints": np.linspace(0, 0.5, 100), "value": 0.5, "delay": 0.01}},
+    "gate2": {"voltage": {"type": "dynamic", "setpoints": np.linspace(0, 0.5, 100), "value": 0.5, "delay": 0.01}},
 }
 # %%
 
@@ -93,7 +103,9 @@ script = Generic_1D_Sweep()
 script.setup(
     parameters,
     metadata=None,
+    ramp_rate=0.5,
     #buffer_settings=buffer_settings,
+    #trigger_type="manual",
     #trigger_type="hardware",
     #trigger_start=trigger.set,
     #trigger_reset=trigger.clear,
@@ -105,3 +117,5 @@ map_terminals_gui(station.components, script.gate_parameters)
 load_or_create_experiment("test_exp", sample_name="no_sample")
 # %% Run measurement
 script.run()
+
+# %%
