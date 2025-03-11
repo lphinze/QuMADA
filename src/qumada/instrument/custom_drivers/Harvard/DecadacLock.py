@@ -16,6 +16,7 @@
 #
 # Contributors:
 # - Hendrik Bluhm
+# - Lennart Hinze
 
 # This file is untested. See also Dummies/dummy_dacLock.py for an implementation 
 # that can be tested without hardware.
@@ -25,7 +26,7 @@ import threading
 
 class DacChannelLock(DacChannel):
     """
-    Modified DacChannel class to supprt locking.
+    Modified DacChannel class to support locking.
     """
     def __init__(self, parent, name, channel, min_val=-5, max_val=5):
         super().__init__(parent, name, channel, min_val, max_val)
